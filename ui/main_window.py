@@ -10,6 +10,8 @@ from PyQt5.QtCore import Qt, QDateTime
 from PyQt5.QtGui import QFont, QIcon
 from core.processor import LogAIProcessor
 from core.analysis_thread import AnalysisThread
+from ui.file_tab import FileTab
+from ui.analysis_tab import AnalysisTab
 
 # 确保中文显示正常
 matplotlib.rcParams["font.family"] = ["SimHei", "WenQuanYi Micro Hei", "Heiti TC"]
@@ -47,12 +49,12 @@ class LogAnalyzerGUI(QMainWindow):
         self.tabs.addTab(self.config_tab, "配置")
 
         # 1. 文件选择标签页
-        self.file_tab = QWidget()
+        self.file_tab = FileTab(self.processor, self.config, self)
         self.setup_file_tab()
         self.tabs.addTab(self.file_tab, "文件选择")
 
         # 2. 分析标签页
-        self.analysis_tab = QWidget()
+        self.analysis_tab = AnalysisTab(self.processor, self.file_tab, self)
         self.setup_analysis_tab()
         self.tabs.addTab(self.analysis_tab, "数据分析")
 
