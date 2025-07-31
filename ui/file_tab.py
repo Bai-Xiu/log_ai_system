@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdi
                              QPushButton, QListWidget, QGroupBox, QSplitter,
                              QFileDialog, QListWidgetItem, QMessageBox)
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFileIconProvider
+from PyQt5.QtWidgets import QFileIconProvider
 import os
 import shutil
 from utils.helpers import get_file_list, show_info_message, show_error_message
@@ -117,7 +117,7 @@ class FileTab(QWidget):
             self.update_file_list()
             self.clear_selection()
             if self.parent:
-                self.parent.statusBar().showMessage(f"数据目录已更新为: {new_dir}")
+                self.parent.statusBar.showMessage(f"数据目录已更新为: {new_dir}")
         else:
             show_error_message(self, "警告", "无效的目录路径")
             self.data_dir_edit.setText(self.config.get("data_dir"))  # 修正：使用配置中的目录
@@ -164,22 +164,28 @@ class FileTab(QWidget):
                 self.update_file_list()
 
     def update_file_list(self):
-        """更新可用文件列表"""
+        """更新可用文件列表，优化错误判断"""
         self.file_list.clear()
         try:
-            # 修正：使用配置中的数据目录
-            files = get_file_list(self.config.get("data_dir"))
+            data_dir = self.config.get("data_dir")
+            if not data_dir or not os.path.isdir(data_dir):
+                show_error_message(self, "警告", f"数据目录不存在: {data_dir}")
+                return
+
+            files = get_file_list(data_dir)
             icon_provider = QFileIconProvider()
 
             for file in files:
-                # 创建带有图标的列表项
                 item = QListWidgetItem(icon_provider.icon(QFileIconProvider.File), file)
                 self.file_list.addItem(item)
 
-            if self.parent:
-                self.parent.statusBar().showMessage(f"已加载 {len(files)} 个文件")
+            self.parent.statusBar.showMessage(f"已加载 {len(files)} 个文件")
+        except PermissionError:
+            show_error_message(self, "权限错误", "无法访问目录，请检查权限")
         except Exception as e:
-            show_error_message(self, "警告", f"加载文件列表失败: {str(e)}")
+            # 仅在文件列表为空且出错时提示，避免误报
+            if not self.file_list.count():
+                show_error_message(self, "加载失败", f"无法加载文件列表: {str(e)}")
 
     def add_files(self):
         """添加文件到选择列表"""
@@ -219,7 +225,7 @@ class FileTab(QWidget):
         if self.parent and hasattr(self.parent, 'tabs'):
             self.parent.tabs.setCurrentIndex(2)  # 假设分析标签页索引为2
             if hasattr(self.parent, 'statusBar'):
-                self.parent.statusBar().showMessage(f"已选择 {len(self.selected_files)} 个文件")
+                self.parent.statusBar.showMessage(f"已选择 {len(self.selected_files)} 个文件")
 
     def get_selected_files(self):
         """获取选中的文件列表"""
