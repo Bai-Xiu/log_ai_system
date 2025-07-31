@@ -2,10 +2,8 @@ import os
 import pandas as pd
 import json
 from utils.helpers import get_file_list, sanitize_filename
-
-# 按照官方示例导入OpenAI
+from core.api_client import DeepSeekAPI
 from openai import OpenAI
-
 
 class DeepSeekAPI:
     def __init__(self, api_key):
@@ -31,20 +29,28 @@ class DeepSeekAPI:
 class LogAIProcessor:
     def __init__(self, config):
         self.config = config
-        self.api_key = config.get("api_key", "")
+        self.api_key = config.get("api_key")
         self.data_dir = config.get("data_dir", "")  # 用户指定的目录，无默认值
         self.save_dir = config.get("save_dir", "")  # 用户指定的保存目录
         self.verbose = config.get("verbose_logging", False)
         self.supported_encodings = ['utf-8', 'gbk', 'gb2312', 'ansi']
-
-        # 初始化API客户端（不添加任何额外检查）
-        self.client = DeepSeekAPI(api_key=self.api_key) if self.api_key else None
+        self.client = self._init_api_client()
 
         # 存储当前选择的文件和数据
         self.current_files = None
         self.current_data = None
 
-    # 移除所有与raw/processed目录相关的方法和逻辑
+    def _init_api_client(self):
+        """初始化API客户端"""
+        if self.api_key:
+            return DeepSeekAPI(self.api_key)
+        return None
+
+    def set_api_key(self, api_key):
+        """更新API密钥并重新初始化客户端"""
+        self.api_key = api_key
+        self.client = self._init_api_client()
+        self.config.set("api_key", api_key)  # 同步保存到配置
     def set_data_dir(self, new_dir):
         """设置数据目录（完全由用户指定）"""
         if new_dir:
@@ -96,17 +102,23 @@ class LogAIProcessor:
         return data_dict
 
     def read_file_with_encoding(self, file_path, nrows=None):
-        """读取CSV文件"""
+        """优化文件读取逻辑，增强错误处理"""
         if os.path.getsize(file_path) == 0:
             raise ValueError(f"文件为空: {file_path}")
 
-        # 尝试多种编码读取CSV
+        # 先验证CSV格式
+        is_valid, msg = is_valid_csv(file_path)
+        if not is_valid:
+            raise ValueError(f"无效CSV文件: {msg}")
+
+        # 尝试多种编码读取
         for encoding in self.supported_encodings:
             try:
                 kwargs = {
                     'encoding': encoding,
                     'sep': ',',
-                    'engine': 'python'
+                    'engine': 'python',
+                    'on_bad_lines': 'warn'  # 新增：警告坏行而非崩溃
                 }
                 if nrows:
                     kwargs['nrows'] = nrows
@@ -117,14 +129,8 @@ class LogAIProcessor:
                 print(f"编码 {encoding} 读取失败: {str(e)}")
                 continue
 
-        # 最后尝试
-        return pd.read_csv(
-            file_path,
-            encoding='utf-8',
-            errors='replace',
-            sep=',',
-            engine='python'
-        )
+        # 所有编码失败时明确报错
+        raise UnicodeDecodeError(f"无法解析文件 {file_path}，尝试过编码: {self.supported_encodings}")
 
     def generate_processing_code(self, user_request, file_names):
         """生成处理代码"""
