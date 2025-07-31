@@ -1,0 +1,6 @@
+{
+  "api_key": "sk-ce90606950d54b5eb2f22ba026174e2d",
+  "data_dir": "D:/Pycharm_program/name/log_ai_system/data/raw",
+  "save_dir": "D:/Pycharm_program/name/log_ai_system/data/processed",
+  "verbose_logging": false
+}

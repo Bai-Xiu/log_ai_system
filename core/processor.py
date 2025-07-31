@@ -2,15 +2,14 @@ import os
 import pandas as pd
 import json
 from utils.helpers import get_file_list, sanitize_filename
-from core.api_client import DeepSeekAPI
-
+from core.api_client import DeepSeekAPI  # 引用统一的API客户端
 
 class LogAIProcessor:
     def __init__(self, config):
         self.config = config
         self.api_key = config.get("api_key", "")
-        self.data_dir = config.get("data_dir", "")  # 用户指定的目录，无默认值
-        self.save_dir = config.get("save_dir", "")  # 用户指定的保存目录
+        self.data_dir = config.get("data_dir", "")
+        self.save_dir = config.get("save_dir", "")
         self.verbose = config.get("verbose_logging", False)
         self.supported_encodings = ['utf-8', 'gbk', 'gb2312', 'ansi']
 

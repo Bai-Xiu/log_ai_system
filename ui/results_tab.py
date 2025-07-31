@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-                             QPushButton, QTextEdit, QTableWidget, QTableWidgetItem,
+                             QPushButton, QTextEdit, QTableWidget, QTableWidgetItem,  # 确保包含 QTextEdit
                              QSplitter, QGroupBox, QFileDialog)
 from PyQt5.QtCore import Qt
 import os
@@ -13,11 +13,10 @@ class ResultsTab(QWidget):
         self.config = config
         self.parent = parent
         self.current_result = None
-        self.save_dir = config.get("save_dir")  # 默认保存目录
+        self.save_dir = config.get("save_dir")
         self.init_ui()
 
     def init_ui(self):
-        """初始化结果展示标签页UI"""
         layout = QVBoxLayout(self)
 
         # 保存路径选择
@@ -25,7 +24,7 @@ class ResultsTab(QWidget):
         save_path_layout.addWidget(QLabel("保存路径:"))
 
         self.save_dir_edit = QLineEdit(self.save_dir)
-        self.save_dir_edit.setReadOnly(False)  # 允许手动输入保存路径
+        self.save_dir_edit.setReadOnly(False)
         save_path_layout.addWidget(self.save_dir_edit)
 
         self.change_save_dir_btn = QPushButton("浏览...")
@@ -42,7 +41,6 @@ class ResultsTab(QWidget):
         # 总结区域
         summary_group = QGroupBox("分析总结")
         summary_layout = QVBoxLayout(summary_group)
-
         self.summary_display = QTextEdit()
         self.summary_display.setReadOnly(True)
         summary_layout.addWidget(self.summary_display)
@@ -51,7 +49,6 @@ class ResultsTab(QWidget):
         # 表格区域
         table_group = QGroupBox("结果表格")
         table_layout = QVBoxLayout(table_group)
-
         self.result_table = QTableWidget()
         table_layout.addWidget(self.result_table)
         splitter.addWidget(table_group)
@@ -59,7 +56,6 @@ class ResultsTab(QWidget):
 
         # 按钮区
         btn_layout = QHBoxLayout()
-
         self.save_btn = QPushButton("保存结果")
         self.save_btn.clicked.connect(self.save_results)
         self.save_btn.setEnabled(False)
@@ -71,18 +67,15 @@ class ResultsTab(QWidget):
         btn_layout.addStretch()
         btn_layout.addWidget(self.new_analysis_btn)
 
-        # 组装布局
         layout.addLayout(save_path_layout)
         layout.addWidget(splitter)
         layout.addLayout(btn_layout)
 
     def set_result(self, result):
-        """设置并显示分析结果"""
         self.current_result = result
         self.display_results(result)
 
     def display_results(self, result):
-        """展示分析结果，优化时间显示"""
         # 显示总结
         if "summary" in result:
             self.summary_display.setText(result["summary"])
@@ -91,32 +84,6 @@ class ResultsTab(QWidget):
         # 显示表格
         if "result_table" in result and isinstance(result["result_table"], pd.DataFrame):
             df = result["result_table"].copy()
-
-            # 优化日期时间列显示
-            for col in df.columns:
-                col_name = str(col).lower()
-                # 识别可能的日期时间列
-                if any(keyword in col_name for keyword in
-                       ['date', 'time', 'timestamp', 'datetime', '时间', '日期', '时间戳']):
-                    try:
-                        # 尝试转换为日期时间
-                        if not pd.api.types.is_datetime64_any_dtype(df[col]):
-                            df[col] = pd.to_datetime(df[col], errors='coerce')
-
-                        # 转换为友好的字符串格式
-                        if pd.api.types.is_datetime64_any_dtype(df[col]):
-                            # 区分日期和时间
-                            if df[col].dt.hour.nunique() > 1 or df[col].dt.minute.nunique() > 1:
-                                # 有具体时间信息
-                                df[col] = df[col].dt.strftime('%Y-%m-%d %H:%M:%S')
-                            else:
-                                # 只有日期信息
-                                df[col] = df[col].dt.strftime('%Y-%m-%d')
-                    except Exception as e:
-                        print(f"列 {col} 日期格式化失败: {e}")
-                        df[col] = df[col].astype(str)
-
-            # 填充表格数据
             self.result_table.setRowCount(df.shape[0])
             self.result_table.setColumnCount(df.shape[1])
             self.result_table.setHorizontalHeaderLabels(df.columns)
@@ -125,66 +92,45 @@ class ResultsTab(QWidget):
                 for col in range(df.shape[1]):
                     try:
                         value = str(df.iloc[row, col])
-                        # 处理空值显示
                         if value in ['NaT', 'nan', 'None', '']:
                             value = ''
                     except Exception as e:
                         value = f"数据错误: {str(e)}"
                     self.result_table.setItem(row, col, QTableWidgetItem(value))
 
-            # 自动调整列宽
             self.result_table.resizeColumnsToContents()
 
     def change_save_dir(self):
-        """通过浏览更改保存目录"""
-        new_dir = QFileDialog.getExistingDirectory(
-            self, "选择保存目录", self.save_dir
-        )
+        new_dir = QFileDialog.getExistingDirectory(self, "选择保存目录", self.save_dir)
         if new_dir:
             self.save_dir_edit.setText(new_dir)
             self.apply_save_dir()
 
     def apply_save_dir(self):
-        """应用保存目录更改"""
         new_dir = self.save_dir_edit.text().strip()
         if new_dir and os.path.isdir(new_dir):
             self.save_dir = new_dir
             self.config.set("save_dir", new_dir)
-            if self.parent and hasattr(self.parent, 'statusBar'):
-                self.parent.statusBar().showMessage(f"保存目录已更新为: {new_dir}")
         else:
-            show_error_message(self, "警告", "无效的目录路径")
+            show_error_message(self, "错误", "无效的目录路径")
             self.save_dir_edit.setText(self.save_dir)
 
     def save_results(self):
-        """保存分析结果"""
         if not self.current_result or "result_table" not in self.current_result:
             show_error_message(self, "错误", "没有可保存的结果")
             return
 
         try:
-            # 确保保存目录存在
-            os.makedirs(self.save_dir, exist_ok=True)
-
-            # 生成唯一文件名
+            df = self.current_result["result_table"]
             base_name = "analysis_result"
             filename = get_unique_filename(self.save_dir, base_name, "csv")
             file_path = os.path.join(self.save_dir, filename)
 
-            # 保存CSV
-            self.current_result["result_table"].to_csv(file_path, index=False, encoding='utf-8-sig')
-
-            # 保存总结
-            summary_filename = get_unique_filename(self.save_dir, base_name, "txt")
-            summary_path = os.path.join(self.save_dir, summary_filename)
-            with open(summary_path, 'w', encoding='utf-8') as f:
-                f.write(self.current_result.get("summary", "无总结信息"))
-
-            show_info_message(self, "成功", f"结果已保存到:\n{file_path}\n{summary_path}")
+            df.to_csv(file_path, index=False, encoding="utf-8-sig")
+            show_info_message(self, "成功", f"结果已保存至:\n{file_path}")
         except Exception as e:
             show_error_message(self, "保存失败", f"无法保存结果: {str(e)}")
 
     def start_new_analysis(self):
-        """开始新的分析"""
         if self.parent and hasattr(self.parent, 'tabs'):
-            self.parent.tabs.setCurrentIndex(1)  # 切换到文件选择标签页
+            self.parent.tabs.setCurrentIndex(1)  # 返回文件选择页
