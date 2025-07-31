@@ -5,11 +5,10 @@ import json
 class Config:
     def __init__(self):
         self.config_file = os.path.join(os.path.expanduser("~"), ".log_analyzer_config.json")
-        # 仅保留基础配置，移除所有与raw/processed相关的路径设置
         self.defaults = {
-            "data_dir": "",  # 完全由用户指定的目录
+            "data_dir": "",  # 仅保留用户指定目录
             "api_key": "",
-            "save_dir": "",      # 用户指定的保存目录
+            "save_dir": "",
             "verbose_logging": False
         }
         self.config = self.defaults.copy()
