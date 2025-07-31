@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdi
                              QPushButton, QListWidget, QGroupBox, QSplitter,
                              QFileDialog, QListWidgetItem, QMessageBox)
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFileIconProvider
+from PyQt5.QtWidgets import QFileIconProvider
 import os
 import shutil
 from utils.helpers import get_file_list, show_info_message, show_error_message
