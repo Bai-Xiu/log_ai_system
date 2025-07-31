@@ -28,12 +28,13 @@ except ImportError:
     OpenAI = OpenAIStub
 
 
+# log_ai_system/core/api_client.py
 class DeepSeekAPI:
     def __init__(self, api_key):
         self.api_key = api_key
         self.client = OpenAI(
             api_key=api_key,
-            base_url="https://api.deepseek.com"
+            base_url="https://api.deepseek.com"  # 符合官方base_url
         )
 
     def completions_create(self, model, prompt, max_tokens=5000, temperature=0.3, retry=3):
@@ -42,9 +43,8 @@ class DeepSeekAPI:
             try:
                 return self.client.chat.completions.create(
                     model=model,
-                    messages=[
-                        {"role": "system",
-                         "content": "你是专业的信息安全日志分析专家，生成可执行Python代码，只返回代码不解释。"},
+                    messages=[  # 严格匹配官方messages格式
+                        {"role": "system", "content": "你是专业的信息安全日志分析专家，生成可执行Python代码，只返回代码不解释。"},
                         {"role": "user", "content": prompt}
                     ],
                     max_tokens=max_tokens,
