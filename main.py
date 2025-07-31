@@ -6,15 +6,13 @@ from utils.config import Config
 
 
 def main():
-    # 初始化配置
     config = Config()
     config.load()
 
     data_dir = config.get('data_dir')
     if data_dir and os.path.isdir(data_dir):
-        os.makedirs(data_dir, exist_ok=True)
+        os.makedirs(data_dir, exist_ok=True)  # 仅创建用户指定目录
     else:
-        # 如果配置中没有有效的数据目录，使用当前目录
         default_dir = os.path.abspath("./data")
         os.makedirs(default_dir, exist_ok=True)
         config.set('data_dir', default_dir)
