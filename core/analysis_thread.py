@@ -50,45 +50,49 @@ class AnalysisThread(QThread):
         data_dict = self.processor.load_data_files(self.file_paths)
 
         # 创建一个包装函数，确保代码能正确访问数据并返回结果
+        # 在 wrapped_code 中，将识别 result_table 的部分修改为：
         wrapped_code = f"""
-import pandas as pd
-import numpy as np
+        import pandas as pd
+        import numpy as np
 
-def process_data(data_dict):
-    # 从数据字典中提取文件
-{chr(10).join([f'    {file} = data_dict["{file}"]' for file in self.file_paths])}
+        def process_data(data_dict):
+            # 从数据字典中提取文件
+        {chr(10).join([f'    {file} = data_dict["{file}"]' for file in self.file_paths])}
 
-    # 用户代码
-{chr(10).join([f'    {line}' for line in cleaned_code.splitlines()])}
+            # 用户代码
+        {chr(10).join([f'    {line}' for line in cleaned_code.splitlines()])}
 
-    # 尝试识别并返回结果
-    local_vars = locals()
-    dfs = [v for v in local_vars.values() if isinstance(v, pd.DataFrame)]
+            # 确保 result_table 始终被定义（核心修复）
+            result_table = None  # 强制初始化，避免未定义
 
-    # 查找可能的合并结果
-    if 'combined' in local_vars and isinstance(local_vars['combined'], pd.DataFrame):
-        result_table = local_vars['combined']
-    elif dfs:
-        # 如果有多个DataFrame，尝试合并
-        if len(dfs) > 1:
-            try:
-                result_table = pd.concat(dfs, ignore_index=True)
-            except:
-                result_table = dfs[-1]
-        else:
-            result_table = dfs[0]
-    else:
-        result_table = None
+            # 查找可能的合并结果
+            local_vars = locals()
+            dfs = [v for v in local_vars.values() if isinstance(v, pd.DataFrame)]
 
-    # 生成总结
-    summary = "分析完成。"
-    if result_table is not None:
-        summary += f"共处理 {len(result_table)} 条记录。"
+            if 'combined' in local_vars and isinstance(local_vars['combined'], pd.DataFrame):
+                result_table = local_vars['combined']
+            elif dfs:
+                # 如果有多个DataFrame，尝试合并
+                if len(dfs) > 1:
+                    try:
+                        result_table = pd.concat(dfs, ignore_index=True)
+                    except:
+                        result_table = dfs[-1]
+                else:
+                    result_table = dfs[0]
+            # 即使以上都不满足，result_table 已被初始化为 None
 
-    return {{"result_table": result_table, "summary": summary}}
+            # 生成总结（确保引用前已定义）
+            summary = "分析完成。"
+            if result_table is not None:
+                summary += f"共处理 {len(result_table)} 条记录。"
+            else:
+                summary += "未生成有效结果表格。"  # 兜底提示
 
-# 执行处理函数
-result = process_data(data_dict)
+            return {{"result_table": result_table, "summary": summary}}
+
+        # 执行处理函数
+        result = process_data(data_dict)
         """
 
         # 执行代码

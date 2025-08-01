@@ -71,11 +71,10 @@ class LogAIProcessor:
         return data_dict
 
     def read_file_with_encoding(self, file_path, nrows=None):
-        """读取CSV文件"""
         if os.path.getsize(file_path) == 0:
             raise ValueError(f"文件为空: {file_path}")
 
-        # 尝试多种编码读取CSV
+        # 尝试多种编码读取CSV（只在所有编码失败时打印错误）
         for encoding in self.supported_encodings:
             try:
                 kwargs = {
@@ -87,19 +86,15 @@ class LogAIProcessor:
                     kwargs['nrows'] = nrows
 
                 df = pd.read_csv(file_path, **kwargs)
+                # 仅在成功时打印编码信息（可选）
+                # print(f"使用编码 {encoding} 成功读取文件: {file_path}")
                 return df
             except Exception as e:
-                print(f"编码 {encoding} 读取失败: {str(e)}")
+                # 移除单种编码失败的打印，只在全部失败时提示
                 continue
 
-        # 最后尝试
-        return pd.read_csv(
-            file_path,
-            encoding='utf-8',
-            errors='replace',
-            sep=',',
-            engine='python'
-        )
+        # 所有编码尝试失败时才报错
+        raise ValueError(f"无法读取文件 {file_path}，尝试过编码: {self.supported_encodings}")
 
     def generate_processing_code(self, user_request, file_names):
         """生成处理代码"""
@@ -119,13 +114,16 @@ class LogAIProcessor:
                 "sample": df.head(2).to_dict(orient='records')
             }
 
-        prompt = f"""根据用户请求编写处理日志的Python函数:
+        prompt = f"""根据用户请求编写处理日志的Python函数，严格遵守以下规则:
+1. 函数名必须为process_data，参数为data_dict（文件名到DataFrame的字典）。
+2. 必须返回字典 {{'result_table': DataFrame, 'summary': '总结文本'}}，其中：
+   - 'result_table' 键**必须存在**，即使结果为空也需返回空DataFrame（pd.DataFrame()）。
+   - 'summary' 为分析总结文本。
+3. 处理逻辑需基于data_dict中的数据（可通过data_dict[文件名]获取DataFrame）。
+4. 仅返回函数代码，不包含任何解释。
+
 用户需求: {user_request}
 数据信息: {json.dumps(file_info, ensure_ascii=False)}
-
-函数名必须是process_data，接收data_dict参数(文件名到DataFrame的字典)
-返回格式: {{'result_table': DataFrame, 'summary': '总结文本'}}
-只需返回函数代码，不要其他内容
 """
 
         response = self.client.completions_create(

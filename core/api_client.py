@@ -37,7 +37,7 @@ class DeepSeekAPI:
             base_url="https://api.deepseek.com"
         )
 
-    def completions_create(self, model="deepseek-chat", prompt=None, max_tokens=5000, temperature=0.3, retry=3):
+    def completions_create(self, model="deepseek-reasoner", prompt=None, max_tokens=5000, temperature=0.3, retry=3):
         """使用官方示例的调用参数和格式"""
         if not prompt:
             raise ValueError("prompt不能为空")
@@ -47,7 +47,7 @@ class DeepSeekAPI:
             try:
                 # 完全对齐官方示例的参数结构
                 return self.client.chat.completions.create(
-                    model=model,  # 官方示例使用 "deepseek-chat"
+                    model=model,
                     messages=[
                         {"role": "system",
                          "content": "你是专业的信息安全日志分析专家，生成可执行Python代码，只返回代码不解释。"},
@@ -55,8 +55,7 @@ class DeepSeekAPI:
                     ],
                     max_tokens=max_tokens,
                     temperature=temperature,
-                    stream=False  # 官方示例为False
-                    # 移除官方示例中没有的timeout参数，或按需求保留
+                    stream=False
                 )
             except Exception as e:
                 attempt += 1
