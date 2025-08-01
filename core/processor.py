@@ -114,16 +114,15 @@ class LogAIProcessor:
                 "sample": df.head(2).to_dict(orient='records')
             }
 
-        prompt = f"""根据用户请求编写处理日志的Python函数，严格遵守以下规则:
-1. 函数名必须为process_data，参数为data_dict（文件名到DataFrame的字典）。
-2. 必须返回字典 {{'result_table': DataFrame, 'summary': '总结文本'}}，其中：
-   - 'result_table' 键**必须存在**，即使结果为空也需返回空DataFrame（pd.DataFrame()）。
-   - 'summary' 为分析总结文本。
-3. 处理逻辑需基于data_dict中的数据（可通过data_dict[文件名]获取DataFrame）。
-4. 仅返回函数代码，不包含任何解释。
-
+        prompt = f"""根据用户请求编写处理日志的Python代码（仅返回函数内部逻辑，不要包含函数定义）:
 用户需求: {user_request}
 数据信息: {json.dumps(file_info, ensure_ascii=False)}
+
+说明：
+1. 已存在process_data(data_dict)函数，你只需返回函数内部的处理逻辑
+2. data_dict是文件名到DataFrame的字典，可直接使用
+3. 最终需定义result_table（DataFrame类型）和summary（字符串类型）
+4. 不要包含函数定义和return语句，只需返回中间处理代码
 """
 
         response = self.client.completions_create(

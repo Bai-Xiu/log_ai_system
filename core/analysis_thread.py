@@ -49,59 +49,62 @@ class AnalysisThread(QThread):
         # 准备数据字典
         data_dict = self.processor.load_data_files(self.file_paths)
 
-        # 创建一个包装函数，确保代码能正确访问数据并返回结果
-        # 在 wrapped_code 中，将识别 result_table 的部分修改为：
-        wrapped_code = f"""
-        import pandas as pd
-        import numpy as np
-
-        def process_data(data_dict):
-            # 从数据字典中提取文件
-        {chr(10).join([f'    {file} = data_dict["{file}"]' for file in self.file_paths])}
-
-            # 用户代码
-        {chr(10).join([f'    {line}' for line in cleaned_code.splitlines()])}
-
-            # 确保 result_table 始终被定义（核心修复）
-            result_table = None  # 强制初始化，避免未定义
-
-            # 查找可能的合并结果
-            local_vars = locals()
-            dfs = [v for v in local_vars.values() if isinstance(v, pd.DataFrame)]
-
-            if 'combined' in local_vars and isinstance(local_vars['combined'], pd.DataFrame):
-                result_table = local_vars['combined']
-            elif dfs:
-                # 如果有多个DataFrame，尝试合并
-                if len(dfs) > 1:
-                    try:
-                        result_table = pd.concat(dfs, ignore_index=True)
-                    except:
-                        result_table = dfs[-1]
-                else:
-                    result_table = dfs[0]
-            # 即使以上都不满足，result_table 已被初始化为 None
-
-            # 生成总结（确保引用前已定义）
-            summary = "分析完成。"
-            if result_table is not None:
-                summary += f"共处理 {len(result_table)} 条记录。"
+        # 处理代码行：为空行添加0缩进，非空行添加4空格缩进
+        processed_lines = []
+        for line in cleaned_code.splitlines():
+            # 处理空行（只包含空白字符的行）
+            if line.strip() == "":
+                processed_lines.append("")  # 空行保持原样，不添加缩进
             else:
-                summary += "未生成有效结果表格。"  # 兜底提示
+                processed_lines.append(f"    {line}")  # 非空行添加4空格缩进
 
-            return {{"result_table": result_table, "summary": summary}}
+        # 创建包装函数
+        wrapped_code = f"""
+    import pandas as pd
+    import numpy as np
 
-        # 执行处理函数
-        result = process_data(data_dict)
+    def process_data(data_dict):
+        # 从数据字典中提取文件
+    {chr(10).join([f'    {file} = data_dict["{file}"]' for file in self.file_paths])}
+
+        # 用户代码
+    {chr(10).join(processed_lines)}  # 使用处理后的代码行
+
+        # 尝试识别并返回结果
+        local_vars = locals()
+        dfs = [v for v in local_vars.values() if isinstance(v, pd.DataFrame)]
+
+        # 查找可能的合并结果
+        if 'combined' in local_vars and isinstance(local_vars['combined'], pd.DataFrame):
+            result_table = local_vars['combined']
+        elif dfs:
+            # 如果有多个DataFrame，尝试合并
+            if len(dfs) > 1:
+                try:
+                    result_table = pd.concat(dfs, ignore_index=True)
+                except:
+                    result_table = dfs[-1]
+            else:
+                result_table = dfs[0]
+        else:
+            result_table = None
+
+        # 生成总结
+        summary = "分析完成。"
+        if result_table is not None:
+
+        return {{"result_table": result_table, "summary": summary}}
+
+    # 执行处理函数
+    result = process_data(data_dict)
         """
 
-        # 执行代码
+        # 执行代码（后续逻辑不变）
         local_vars = {}
         try:
             exec(wrapped_code, globals(), local_vars)
             return local_vars.get('result', {"summary": "代码执行完成，但未生成有效结果"})
         except Exception as e:
-            # 执行出错时返回错误信息和执行的代码
             return {
                 "summary": f"代码执行错误: {str(e)}\n\n执行的代码:\n{cleaned_code}"
             }
