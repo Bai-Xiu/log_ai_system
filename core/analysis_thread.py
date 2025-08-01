@@ -60,45 +60,42 @@ class AnalysisThread(QThread):
 
         # 创建包装函数
         wrapped_code = f"""
-    import pandas as pd
-    import numpy as np
+import pandas as pd
+import numpy as np
 
-    def process_data(data_dict):
-        # 从数据字典中提取文件
-    {chr(10).join([f'    {file} = data_dict["{file}"]' for file in self.file_paths])}
+def process_data(data_dict):
+    # 从数据字典中提取文件
+{chr(10).join([f'    {file} = data_dict["{file}"]' for file in self.file_paths])}
 
-        # 用户代码
-    {chr(10).join(processed_lines)}  # 使用处理后的代码行
+    # 用户代码
+{chr(10).join(processed_lines)}  # 确保processed_lines的每行已有4个空格缩进
 
-        # 尝试识别并返回结果
-        local_vars = locals()
-        dfs = [v for v in local_vars.values() if isinstance(v, pd.DataFrame)]
+    # 尝试识别并返回结果
+    local_vars = locals()
+    dfs = [v for v in local_vars.values() if isinstance(v, pd.DataFrame)]
 
-        # 查找可能的合并结果
-        if 'combined' in local_vars and isinstance(local_vars['combined'], pd.DataFrame):
-            result_table = local_vars['combined']
-        elif dfs:
-            # 如果有多个DataFrame，尝试合并
-            if len(dfs) > 1:
-                try:
-                    result_table = pd.concat(dfs, ignore_index=True)
-                except:
-                    result_table = dfs[-1]
-            else:
-                result_table = dfs[0]
+    # 查找可能的合并结果
+    if 'combined' in local_vars and isinstance(local_vars['combined'], pd.DataFrame):
+        result_table = local_vars['combined']
+    elif dfs:
+        if len(dfs) > 1:
+            try:
+                result_table = pd.concat(dfs, ignore_index=True)
+            except:
+                result_table = dfs[-1]
         else:
-            result_table = None
+            result_table = dfs[0]
+    else:
+        result_table = None
 
-        # 生成总结
-        summary = "分析完成。"
-        if result_table is not None:
+    # 生成总结
+    summary = "分析完成。"
 
-        return {{"result_table": result_table, "summary": summary}}
+    return {{"result_table": result_table, "summary": summary}}
 
-    # 执行处理函数
-    result = process_data(data_dict)
-        """
-
+# 执行处理函数
+result = process_data(data_dict)
+"""
         # 执行代码（后续逻辑不变）
         local_vars = {}
         try:
