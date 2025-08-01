@@ -1,8 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QTabWidget, QGroupBox,
-                             QHBoxLayout, QLabel, QLineEdit, QPushButton, QListWidget,
-                             QSplitter, QStatusBar, QTextEdit, QComboBox, QProgressBar,
-                             QTableWidget, QTableWidgetItem)
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QTabWidget, QStatusBar)
 from PyQt5.QtGui import QFont
 from PyQt5.QtGui import QIcon
 import os
@@ -18,6 +15,7 @@ class LogAnalyzerGUI(QMainWindow):
         self.config = config
         self.processor = LogAIProcessor(config)
         self.init_ui()
+        self.set_window_icon()
 
     def init_ui(self):
         # 窗口基本设置
@@ -39,9 +37,8 @@ class LogAnalyzerGUI(QMainWindow):
         self.init_tabs()
 
         # 状态栏
-        self.statusBar = QStatusBar()
-        self.setStatusBar(self.statusBar)
-        self.statusBar.showMessage("就绪")
+        self.setStatusBar(QStatusBar())
+        self.statusBar().showMessage("就绪")
 
     def init_tabs(self):
         """初始化所有标签页"""
@@ -62,13 +59,14 @@ class LogAnalyzerGUI(QMainWindow):
         self.tabs.addTab(self.results_tab, "分析结果")
 
     def set_window_icon(self):
-        """设置窗口图标（如果有）"""
-        try:
-            icon_path = os.path.join(os.path.dirname(__file__), "../resources/icon.ico")
-            if os.path.exists(icon_path):
-                self.setWindowIcon(QIcon(icon_path))
-        except Exception as e:
-            print(f"设置图标失败: {e}")
+        # 解析图标绝对路径（项目根目录 -> resources -> app_icon.ico）
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 获取项目根目录
+        icon_path = os.path.join(root_dir, "resources", "app_icon.ico")
+
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        else:
+            print(f"警告：图标文件不存在 - {icon_path}")
 
     def set_analysis_result(self, result):
         """将分析结果传递给结果标签页"""

@@ -31,17 +31,23 @@ except ImportError:
 class DeepSeekAPI:
     def __init__(self, api_key):
         self.api_key = api_key
+        # 官方示例的客户端初始化
         self.client = OpenAI(
             api_key=api_key,
             base_url="https://api.deepseek.com"
         )
 
-    def completions_create(self, model, prompt, max_tokens=5000, temperature=0.3, retry=3):
+    def completions_create(self, model="deepseek-chat", prompt=None, max_tokens=5000, temperature=0.3, retry=3):
+        """使用官方示例的调用参数和格式"""
+        if not prompt:
+            raise ValueError("prompt不能为空")
+
         attempt = 0
         while attempt < retry:
             try:
+                # 完全对齐官方示例的参数结构
                 return self.client.chat.completions.create(
-                    model=model,
+                    model=model,  # 官方示例使用 "deepseek-chat"
                     messages=[
                         {"role": "system",
                          "content": "你是专业的信息安全日志分析专家，生成可执行Python代码，只返回代码不解释。"},
@@ -49,8 +55,8 @@ class DeepSeekAPI:
                     ],
                     max_tokens=max_tokens,
                     temperature=temperature,
-                    stream=False,
-                    timeout=120
+                    stream=False  # 官方示例为False
+                    # 移除官方示例中没有的timeout参数，或按需求保留
                 )
             except Exception as e:
                 attempt += 1
