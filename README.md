@@ -4,7 +4,7 @@
 - [English Version](#english-version)
 - [中文版本](#中文版本)
 
-##English-version
+## English-version
 
 A PyQt5 and AI-based log analysis tool that helps security analysts quickly process and analyze multiple formats of log files, generating analysis results and summaries through natural language interaction.
 
