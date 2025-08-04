@@ -1,8 +1,8 @@
-# 信息安全日志AI分析系统 / Information Security Log AI Analysis System
+# Information Security Log AI Analysis System / 信息安全日志AI分析系统
 
-## 快速导航
-- [中文版本](#中文版本)
+# 快速导航
 - [English Version](#english-version)
+- [中文版本](#中文版本)
 
 ##English-version
 
