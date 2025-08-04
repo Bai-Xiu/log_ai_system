@@ -15,42 +15,6 @@
 - Python 3.8+
 - 依赖库：`PyQt5`, `pandas`, `numpy`, `openai`
 
-## 安装步骤
-
-### 源码运行
-
-1. 克隆或下载项目到本地
-   ```bash
-   git clone <仓库地址>
-   cd log-ai-system
-   ```
-
-2. 创建并激活虚拟环境
-   ```bash
-   # 创建虚拟环境
-   python -m venv venv
-   
-   # Windows激活
-   venv\Scripts\activate
-   
-   # macOS/Linux激活
-   source venv/bin/activate
-   ```
-
-3. 安装依赖
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. 运行程序
-   ```bash
-   python log_ai_system/main.py
-   ```
-
-### 打包版本
-
-可通过PyInstaller打包为可执行文件（支持Windows/macOS/Linux），具体打包方法参见项目文档。
-
 ## 使用指南
 
 ### 1. 配置设置（首次使用）
@@ -121,7 +85,3 @@ log_ai_system/
 
 3. **Q: 结果表格显示异常？**  
    A: 可能是日志文件格式不规范导致，请检查CSV文件的列分隔符和结构
-
-## 许可证
-
-[MIT](LICENSE)
