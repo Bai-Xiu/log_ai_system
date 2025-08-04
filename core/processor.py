@@ -2,7 +2,11 @@ import os
 import pandas as pd
 import json
 from utils.helpers import get_file_list, sanitize_filename
-from core.api_client import DeepSeekAPI  # 引用统一的API客户端
+from core.api_client import DeepSeekAPI
+from core.file_processors import (
+    CsvFileProcessor, ExcelFileProcessor,
+    JsonFileProcessor, TxtFileProcessor
+)
 
 class LogAIProcessor:
     def __init__(self, config):
@@ -19,6 +23,20 @@ class LogAIProcessor:
         # 存储当前选择的文件和数据
         self.current_files = None
         self.current_data = None
+
+        # 初始化文件处理器（核心扩展点：添加新类型只需在这里注册）
+        self.file_processors = [
+            CsvFileProcessor(),
+            ExcelFileProcessor(),
+            JsonFileProcessor(),
+            TxtFileProcessor()
+        ]
+
+        # 构建扩展名到处理器的映射
+        self.extension_map = {}
+        for processor in self.file_processors:
+            for ext in processor.get_supported_extensions():
+                self.extension_map[ext.lower()] = processor
 
     def set_data_dir(self, new_dir):
         """设置数据目录（完全由用户指定）"""
@@ -47,54 +65,43 @@ class LogAIProcessor:
         return self._load_file_data(file_names)
 
     def _load_file_data(self, file_names):
-        """加载文件数据（使用用户指定的目录）"""
+        """加载文件数据（支持多种类型）"""
         if self.current_data and set(file_names) == set(self.current_data.keys()):
             return self.current_data
 
         data_dict = {}
         for file_name in file_names:
             safe_file = sanitize_filename(file_name)
-            # 直接使用用户指定的目录
             full_path = os.path.join(self.data_dir, safe_file)
 
             if not os.path.exists(full_path):
                 raise FileNotFoundError(f"文件不存在: {full_path}")
 
-            if not full_path.lower().endswith('.csv'):
-                raise ValueError(f"不支持的文件格式: {full_path}。请使用CSV文件。")
+            # 获取文件扩展名
+            _, ext = os.path.splitext(full_path)
+            ext = ext.lower()
 
-            df = self.read_file_with_encoding(full_path)
-            data_dict[safe_file] = df
-            print(f"✅ 已读取文件: {safe_file}, 共 {len(df)} 行")
+            # 检查是否支持该类型
+            if ext not in self.extension_map:
+                supported_exts = ", ".join(self.extension_map.keys())
+                raise ValueError(
+                    f"不支持的文件格式: {ext}。支持的格式: {supported_exts}"
+                )
+
+            # 使用对应的处理器读取文件
+            try:
+                processor = self.extension_map[ext]
+                df = processor.read_file(
+                    full_path,
+                    encodings=self.supported_encodings
+                )
+                data_dict[safe_file] = df
+                print(f"✅ 已读取文件: {safe_file}, 共 {len(df)} 行")
+            except Exception as e:
+                raise RuntimeError(f"读取文件 {safe_file} 失败: {str(e)}")
 
         self.current_data = data_dict
         return data_dict
-
-    def read_file_with_encoding(self, file_path, nrows=None):
-        if os.path.getsize(file_path) == 0:
-            raise ValueError(f"文件为空: {file_path}")
-
-        # 尝试多种编码读取CSV（只在所有编码失败时打印错误）
-        for encoding in self.supported_encodings:
-            try:
-                kwargs = {
-                    'encoding': encoding,
-                    'sep': ',',
-                    'engine': 'python'
-                }
-                if nrows:
-                    kwargs['nrows'] = nrows
-
-                df = pd.read_csv(file_path, **kwargs)
-                # 仅在成功时打印编码信息（可选）
-                # print(f"使用编码 {encoding} 成功读取文件: {file_path}")
-                return df
-            except Exception as e:
-                # 移除单种编码失败的打印，只在全部失败时提示
-                continue
-
-        # 所有编码尝试失败时才报错
-        raise ValueError(f"无法读取文件 {file_path}，尝试过编码: {self.supported_encodings}")
 
     def generate_processing_code(self, user_request, file_names):
         """生成完整可执行代码，而非函数内部逻辑"""

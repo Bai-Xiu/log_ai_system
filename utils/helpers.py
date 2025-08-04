@@ -51,18 +51,22 @@ def get_unique_filename(directory, base_name, extension):
     return filename
 
 
-def is_valid_csv(file_path):
-    """验证CSV文件"""
+def is_valid_file(file_path):
+    """验证支持的文件类型"""
     if not os.path.exists(file_path):
         return False, "文件不存在"
 
     if not os.path.isfile(file_path):
         return False, "路径指向的不是文件"
 
-    if not file_path.lower().endswith('.csv'):
-        return False, "文件不是CSV格式"
-
+    # 检查文件大小
     if os.path.getsize(file_path) == 0:
         return False, "文件为空"
 
-    return True, "有效的CSV文件"
+    # 检查扩展名（可扩展）
+    supported_exts = {'.csv', '.xlsx', '.xls', '.json', '.txt', '.log'}
+    _, ext = os.path.splitext(file_path)
+    if ext.lower() not in supported_exts:
+        return False, f"不支持的文件格式: {ext}。支持: {', '.join(supported_exts)}"
+
+    return True, "有效的文件"

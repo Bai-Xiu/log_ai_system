@@ -124,8 +124,18 @@ class FileTab(QWidget):
 
     def add_external_files(self):
         """添加外部文件到数据目录"""
+        supported_exts = [
+            "CSV文件 (*.csv)",
+            "Excel文件 (*.xlsx *.xls)",
+            "JSON文件 (*.json)",
+            "文本日志 (*.txt *.log)",
+            "所有支持的文件 (*.csv *.xlsx *.xls *.json *.txt *.log)",
+            "所有文件 (*)"
+        ]
+        file_filter = ";;".join(supported_exts)
+
         file_paths, _ = QFileDialog.getOpenFileNames(
-            self, "选择日志文件", "", "CSV文件 (*.csv);;所有文件 (*)"
+            self, "选择日志文件", "", file_filter
         )
 
         if file_paths:
