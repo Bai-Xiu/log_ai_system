@@ -64,7 +64,7 @@ class AnalysisTab(QWidget):
             self.parent.tabs.setCurrentIndex(1)  # 假设文件选择标签页索引为1
 
     def start_analysis(self):
-        """开始分析数据"""
+        """开始数据分析"""
         request = self.request_input.toPlainText().strip()
         if not request:
             show_error_message(self, "警告", "请输入分析请求")

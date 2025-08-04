@@ -24,7 +24,7 @@ class ConfigTab(QWidget):
         self.api_key_edit.setEchoMode(QLineEdit.PasswordEchoOnEdit)
         api_key_layout.addWidget(self.api_key_edit)
 
-        self.save_api_btn = QPushButton("保存API Key")
+        self.save_api_btn = QPushButton("保存")
         self.save_api_btn.clicked.connect(self.save_api_key)
         api_key_layout.addWidget(self.save_api_btn)
 

@@ -97,12 +97,12 @@ class LogAIProcessor:
         raise ValueError(f"无法读取文件 {file_path}，尝试过编码: {self.supported_encodings}")
 
     def generate_processing_code(self, user_request, file_names):
-        """生成处理代码"""
+        """生成完整可执行代码，而非函数内部逻辑"""
         if not self.client:
-            return """def process_data(data_dict):
-    import pandas as pd
-    df = pd.concat(data_dict.values(), ignore_index=True)
-    return {'result_table': df, 'summary': f'共{len(df)}条记录'}"""
+            # 默认代码：直接返回所有数据
+            return """import pandas as pd
+    result_table = pd.concat(data_dict.values(), ignore_index=True)
+    summary = f'共{len(result_table)}条记录'"""
 
         data_dict = self._load_file_data(file_names)
 
@@ -114,16 +114,18 @@ class LogAIProcessor:
                 "sample": df.head(2).to_dict(orient='records')
             }
 
-        prompt = f"""根据用户请求编写处理日志的Python代码（仅返回函数内部逻辑，不要包含函数定义）:
-用户需求: {user_request}
-数据信息: {json.dumps(file_info, ensure_ascii=False)}
+        prompt = f"""根据用户请求编写完整的Python处理代码:
+    用户需求: {user_request}
+    数据信息: {json.dumps(file_info, ensure_ascii=False)}
 
-说明：
-1. 已存在process_data(data_dict)函数，你只需返回函数内部的处理逻辑
-2. data_dict是文件名到DataFrame的字典，可直接使用
-3. 最终需定义result_table（DataFrame类型）和summary（字符串类型）
-4. 不要包含函数定义和return语句，只需返回中间处理代码
-"""
+    说明：
+    1. 已存在变量data_dict（文件名到DataFrame的字典），可直接使用
+    2. 必须导入所需的库（如pandas）
+    3. 最终需定义两个变量：
+       - result_table: 处理后的DataFrame结果
+       - summary: 字符串类型的分析总结
+    4. 不要包含任何函数定义，直接编写可执行代码
+    5. 不需要return语句，只需确保定义了上述两个变量"""
 
         response = self.client.completions_create(
             model='deepseek-reasoner',
@@ -134,36 +136,8 @@ class LogAIProcessor:
 
         code_block = response.choices[0].message.content.strip()
 
+        # 清理代码块中的反引号
         if code_block.startswith('```'):
             code_block = '\n'.join(code_block.split('\n')[1:-1])
 
         return code_block
-
-    def direct_answer(self, user_request, file_names):
-        """直接回答模式"""
-        if not self.client:
-            return {"summary": "请设置有效的API密钥"}
-
-        data_dict = self._load_file_data(file_names)
-
-        stats = []
-        for filename, df in data_dict.items():
-            stats.append({
-                "文件名": filename,
-                "记录数": len(df),
-                "列名": df.columns.tolist()
-            })
-
-        prompt = f"""基于以下统计信息回答问题:
-统计: {json.dumps(stats, ensure_ascii=False)}
-问题: {user_request}
-用简洁的中文回答，不要使用Markdown。"""
-
-        response = self.client.completions_create(
-            model='deepseek-reasoner',
-            prompt=prompt,
-            max_tokens=5000,
-            temperature=0.7
-        )
-
-        return {"summary": response.choices[0].message.content.strip()}
