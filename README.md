@@ -1,5 +1,5 @@
 # Information Security Log AI Analysis System
-##English
+## English
 A PyQt5 and AI-based log analysis tool that helps security analysts quickly process and analyze CSV-formatted log files, generating analysis results and summaries through natural language interaction.
 
 ## Features
@@ -87,7 +87,7 @@ log_ai_system/
    A: May be caused by non-standard log file format, please check the CSV file's column separators and structure
    
 # 信息安全日志AI分析系统
-##中文
+## 中文
 一款基于PyQt5和AI的日志分析工具，可帮助安全分析师快速处理和分析CSV格式的日志文件，通过自然语言交互生成分析结果和总结。
 
 ## 功能特点
