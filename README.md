@@ -1,4 +1,10 @@
-# Information Security Log AI Analysis System
+# 信息安全日志AI分析系统 / Information Security Log AI Analysis System
+
+## 快速导航
+- [中文版本](#中文版本)
+- [English Version](#english-version)
+
+##English-version
 
 A PyQt5 and AI-based log analysis tool that helps security analysts quickly process and analyze multiple formats of log files, generating analysis results and summaries through natural language interaction.
 
@@ -95,7 +101,7 @@ A: May be caused by non-standard log file format, please check the file structur
 
 ---
 
-# 信息安全日志AI分析系统
+## 中文版本
 
 一款基于PyQt5和AI的日志分析工具，可帮助安全分析师快速处理和分析多种格式的日志文件，通过自然语言交互生成分析结果和总结。
 
