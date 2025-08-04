@@ -121,9 +121,9 @@ class LogAIProcessor:
     说明：
     1. 已存在变量data_dict（文件名到DataFrame的字典），可直接使用
     2. 必须导入所需的库（如pandas）
-    3. 最终需定义两个变量：
-       - result_table: 处理后的DataFrame结果
-       - summary: 字符串类型的分析总结
+    3. 必须定义两个变量：
+       - result_table：处理后的DataFrame结果（必须存在）
+       - summary：字符串类型的总结，需包含关键分析结论（如统计数量、趋势、异常点等），禁止使用默认值，必须根据分析结果生成具体内容
     4. 不要包含任何函数定义，直接编写可执行代码
     5. 不需要return语句，只需确保定义了上述两个变量"""
 
