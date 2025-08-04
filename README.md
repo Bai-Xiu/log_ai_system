@@ -53,6 +53,7 @@ After analysis completes, automatically jump to the "Analysis Results" tab:
 log_ai_system/
 ├── core/                 # Core functionality modules
 │   ├── processor.py      # Core processing logic
+│   ├── file_processors.py # Core processing file
 │   ├── api_client.py     # AI API client
 │   └── analysis_thread.py # Analysis thread (executes in background)
 ├── ui/                   # UI components
@@ -146,6 +147,7 @@ log_ai_system/
 log_ai_system/
 ├── core/                 # 核心功能模块
 │   ├── processor.py      # 处理逻辑核心
+│   ├── file_processors.py # 文件处理核心
 │   ├── api_client.py     # AI API客户端
 │   └── analysis_thread.py # 分析线程（后台执行）
 ├── ui/                   # 界面组件
