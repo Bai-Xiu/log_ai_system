@@ -50,7 +50,7 @@ class DeepSeekAPI:
                     model=model,
                     messages=[
                         {"role": "system",
-                         "content": "你是专业的信息安全日志分析专家，生成可执行Python代码，只返回代码不解释。"},
+                         "content": "你是专业的信息安全日志分析专家，根据用户要求解决日志分析问题。"},
                         {"role": "user", "content": prompt}
                     ],
                     max_tokens=max_tokens,

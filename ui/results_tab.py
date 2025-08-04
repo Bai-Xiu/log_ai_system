@@ -132,5 +132,15 @@ class ResultsTab(QWidget):
             show_error_message(self, "保存失败", f"无法保存结果: {str(e)}")
 
     def start_new_analysis(self):
+        """返回分析要求页并清除当前分析结果（保留已选文件）"""
+        # 仅清除当前分析结果，不影响已选择的文件
+        self.current_result = None
+        self.summary_display.clear()
+        self.result_table.clear()
+        self.result_table.setRowCount(0)
+        self.result_table.setColumnCount(0)
+        self.save_btn.setEnabled(False)
+
+        # 切换到分析要求页（数据分析标签页，索引为2）
         if self.parent and hasattr(self.parent, 'tabs'):
-            self.parent.tabs.setCurrentIndex(1)  # 返回文件选择页
+            self.parent.tabs.setCurrentIndex(2)

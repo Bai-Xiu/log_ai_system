@@ -121,7 +121,7 @@ class LogAIProcessor:
                 "sample": df.head(2).to_dict(orient='records')
             }
 
-        prompt = f"""根据用户请求编写完整的Python处理代码:
+        prompt = f"""根据用户请求编写完整的Python处理代码，只返回代码内容:
     用户需求: {user_request}
     数据信息: {json.dumps(file_info, ensure_ascii=False)}
 
@@ -148,3 +148,56 @@ class LogAIProcessor:
             code_block = '\n'.join(code_block.split('\n')[1:-1])
 
         return code_block
+
+    def direct_answer(self, user_request, file_names):
+        """直接回答模式：生成日志总结，不返回表格数据"""
+        data_dict = self._load_file_data(file_names)
+
+        # 收集文件详细信息
+        file_details = []
+        for filename, df in data_dict.items():
+            # 基础信息
+            details = {
+                "文件名": filename,
+                "记录数": len(df),
+                "列名": df.columns.tolist(),
+                "数据类型分布": {col: str(df[col].dtype) for col in df.columns},
+                "数据样本": df.head(min(3, len(df))).to_dict(orient='records')  # 最多3行样本
+            }
+
+            # 数值列统计
+            numeric_stats = {}
+            for col in df.columns:
+                if pd.api.types.is_numeric_dtype(df[col]):
+                    numeric_stats[col] = {
+                        "平均值": df[col].mean(),
+                        "最小值": df[col].min(),
+                        "最大值": df[col].max(),
+                        "非空值数量": df[col].count()
+                    }
+            if numeric_stats:
+                details["数值列统计"] = numeric_stats
+
+            file_details.append(details)
+
+        # 构建提示词
+        prompt = f"""基于以下日志文件的详细信息，回答用户问题并生成总结:
+    文件详情: {json.dumps(file_details, ensure_ascii=False, default=str)}
+    用户问题: {user_request}
+
+    回答要求:
+    1. 深入分析日志数据特征、潜在规律和关键信息
+    2. 直接给出自然语言总结，不生成任何表格或结构化数据
+    3. 内容具体有针对性，避免泛泛而谈
+    4. 涉及统计信息时自然体现关键数值
+    5. 用简洁易懂的中文表达"""
+
+        # 调用API
+        response = self.client.completions_create(
+            model='deepseek-reasoner',
+            prompt=prompt,
+            max_tokens=2000,
+            temperature=0.6
+        )
+
+        return {"summary": response.choices[0].message.content.strip()}
