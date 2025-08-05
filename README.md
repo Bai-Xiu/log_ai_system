@@ -1,105 +1,8 @@
-# Information Security Log AI Analysis System / 信息安全日志AI分析系统
+# 信息安全日志AI分析系统 / Information Security Log AI Analysis System
 
 快速导航
-- [English Version](#english-version)
 - [中文版本](#中文版本)
-
-## English-version
-
-A PyQt5 and AI-based log analysis tool that helps security analysts quickly process and analyze multiple formats of log files, generating analysis results and summaries through natural language interaction.
-
-## Key Updates
-
-- **Expanded File Format Support**: Now supports CSV, Excel (.xlsx, .xls), JSON, TXT, and LOG files
-- **Enhanced Robustness**: Multi-encoding support and improved error handling
-- **Extensible Architecture**: New file types can be easily added through modular processors
-
-## Features
-
-- Supports import and management of multiple log formats (CSV, Excel, JSON, TXT, LOG)
-- Automatically generates processing code and executes it through AI based on natural language analysis requirements
-- Two analysis modes:
-  - Code Processing (generates structured results)
-  - Direct Answer (quickly obtains conclusions)
-- Visual display of analysis results, with support for exporting results to CSV
-- Configurable data directory, result saving directory, and API key
-
-## Requirements
-
-- Python 3.8+
-- Dependent libraries: PyQt5, pandas, numpy, openpyxl, openai
-
-## User Guide
-
-### 1. Configuration Settings (First-time Use)
-In the "Configuration" tab:
-- Enter DeepSeek API key (required for AI analysis functionality)
-- Set default data directory (for storing log files)
-- Set default result directory (for saving analysis results)
-
-### 2. File Selection
-In the "File Selection" tab:
-- Select a data directory (or use the default directory from configuration)
-- Choose the log files to analyze from the list
-- Import new log files using the "Add External Files" button
-- Supported formats: CSV, Excel (.xlsx, .xls), JSON, TXT, LOG
-
-### 3. Data Analysis
-In the "Data Analysis" tab:
-- Enter analysis requirements (e.g., "Count the number of each type of attack", "List the top 10 most frequent IP addresses")
-- Select processing mode:
-  - Code Processing (generates CSV): Suitable for scenarios requiring detailed result tables
-  - Direct Answer: Suitable for quickly obtaining summary conclusions
-- Click the "Start Analysis" button
-
-### 4. View Results
-After analysis completes, automatically jump to the "Analysis Results" tab:
-- View analysis summary (key conclusions)
-- View result table (detailed data)
-- Click "Save Results" to export table data to CSV
-
-## Project Structure
-
-```
-log_ai_system/
-├── core/                 # Core functionality modules
-│   ├── processor.py      # Core processing logic
-│   ├── api_client.py     # AI API client
-│   ├── analysis_thread.py # Analysis thread (executes in background)
-│   └── file_processors.py # File processing modules for different formats
-├── ui/                   # UI components
-│   ├── main_window.py    # Main window
-│   ├── config_tab.py     # Configuration tab
-│   ├── file_tab.py       # File selection tab
-│   ├── analysis_tab.py   # Analysis tab
-│   └── results_tab.py    # Results tab
-├── utils/                # Utility functions
-│   ├── config.py         # Configuration management
-│   └── helpers.py        # Helper functions
-├── resources/            # Resource files (icons, etc.)
-├── config.json           # Configuration file
-└── main.py               # Program entry point
-```
-
-## Notes
-
-- Supported encodings: utf-8, gbk, gb2312, ansi
-- Large log files may require longer processing time, please be patient
-- Analysis results are for reference only; important security decisions should be combined with manual review
-- To add support for new file formats, create a new processor class in `core/file_processors.py` and register it in the processor list
-
-## Frequently Asked Questions
-
-**Q: Unable to load files?**  
-A: Check if the file format is supported, if the path contains special characters, or try changing the file encoding
-
-**Q: AI analysis failed?**  
-A: Check if the API key is valid, network connection is working, or try simplifying the analysis requirements
-
-**Q: Result table display is abnormal?**  
-A: May be caused by non-standard log file format, please check the file structure and formatting
-
----
+- [English Version](#english-version)
 
 ## 中文版本
 
@@ -195,3 +98,100 @@ A: 检查API密钥是否有效，网络连接是否正常，或尝试简化分�
 
 **Q: 结果表格显示异常？**  
 A: 可能是日志文件格式不规范导致，请检查文件结构和格式
+
+---
+
+## English-version
+
+A PyQt5 and AI-based log analysis tool that helps security analysts quickly process and analyze multiple formats of log files, generating analysis results and summaries through natural language interaction.
+
+## Key Updates
+
+- **Expanded File Format Support**: Now supports CSV, Excel (.xlsx, .xls), JSON, TXT, and LOG files
+- **Enhanced Robustness**: Multi-encoding support and improved error handling
+- **Extensible Architecture**: New file types can be easily added through modular processors
+
+## Features
+
+- Supports import and management of multiple log formats (CSV, Excel, JSON, TXT, LOG)
+- Automatically generates processing code and executes it through AI based on natural language analysis requirements
+- Two analysis modes:
+  - Code Processing (generates structured results)
+  - Direct Answer (quickly obtains conclusions)
+- Visual display of analysis results, with support for exporting results to CSV
+- Configurable data directory, result saving directory, and API key
+
+## Requirements
+
+- Python 3.8+
+- Dependent libraries: PyQt5, pandas, numpy, openpyxl, openai
+
+## User Guide
+
+### 1. Configuration Settings (First-time Use)
+In the "Configuration" tab:
+- Enter DeepSeek API key (required for AI analysis functionality)
+- Set default data directory (for storing log files)
+- Set default result directory (for saving analysis results)
+
+### 2. File Selection
+In the "File Selection" tab:
+- Select a data directory (or use the default directory from configuration)
+- Choose the log files to analyze from the list
+- Import new log files using the "Add External Files" button
+- Supported formats: CSV, Excel (.xlsx, .xls), JSON, TXT, LOG
+
+### 3. Data Analysis
+In the "Data Analysis" tab:
+- Enter analysis requirements (e.g., "Count the number of each type of attack", "List the top 10 most frequent IP addresses")
+- Select processing mode:
+  - Code Processing (generates CSV): Suitable for scenarios requiring detailed result tables
+  - Direct Answer: Suitable for quickly obtaining summary conclusions
+- Click the "Start Analysis" button
+
+### 4. View Results
+After analysis completes, automatically jump to the "Analysis Results" tab:
+- View analysis summary (key conclusions)
+- View result table (detailed data)
+- Click "Save Results" to export table data to CSV
+
+## Project Structure
+
+```
+log_ai_system/
+├── core/                 # Core functionality modules
+│   ├── processor.py      # Core processing logic
+│   ├── api_client.py     # AI API client
+│   ├── analysis_thread.py # Analysis thread (executes in background)
+│   └── file_processors.py # File processing modules for different formats
+├── ui/                   # UI components
+│   ├── main_window.py    # Main window
+│   ├── config_tab.py     # Configuration tab
+│   ├── file_tab.py       # File selection tab
+│   ├── analysis_tab.py   # Analysis tab
+│   └── results_tab.py    # Results tab
+├── utils/                # Utility functions
+│   ├── config.py         # Configuration management
+│   └── helpers.py        # Helper functions
+├── resources/            # Resource files (icons, etc.)
+├── config.json           # Configuration file
+└── main.py               # Program entry point
+```
+
+## Notes
+
+- Supported encodings: utf-8, gbk, gb2312, ansi
+- Large log files may require longer processing time, please be patient
+- Analysis results are for reference only; important security decisions should be combined with manual review
+- To add support for new file formats, create a new processor class in `core/file_processors.py` and register it in the processor list
+
+## Frequently Asked Questions
+
+**Q: Unable to load files?**  
+A: Check if the file format is supported, if the path contains special characters, or try changing the file encoding
+
+**Q: AI analysis failed?**  
+A: Check if the API key is valid, network connection is working, or try simplifying the analysis requirements
+
+**Q: Result table display is abnormal?**  
+A: May be caused by non-standard log file format, please check the file structure and formatting
