@@ -6,7 +6,6 @@ from ui.main_window import LogAnalyzerGUI
 from utils.config import Config
 
 def main():
-    # 初始化配置 - 此时会自动创建目录结构
     config = Config()
     config.load()
 

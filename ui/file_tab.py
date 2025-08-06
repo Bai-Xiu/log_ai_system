@@ -12,22 +12,22 @@ class FileTab(QWidget):
     def __init__(self, processor, config, parent=None):
         super().__init__(parent)
         self.processor = processor
-        self.config = config  # 接收配置对象
+        self.config = config  # 配置对象（存储默认目录）
         self.selected_files = []
         self.parent = parent  # 保存父窗口引用
+        self.current_data_dir = self.config.get("data_dir")
         self.init_ui()
 
     def init_ui(self):
-        """初始化文件选择标签页UI"""
         layout = QVBoxLayout(self)
 
         # 数据目录选择区
         dir_layout = QHBoxLayout()
         dir_layout.addWidget(QLabel("当前数据目录:"))
 
-        # 修正：使用配置中的数据目录，而非processor的raw目录方法
-        self.data_dir_edit = QLineEdit(self.config.get("data_dir"))
-        self.data_dir_edit.setReadOnly(False)  # 允许手动输入路径
+        # 显示当前数据目录（而非直接读取配置）
+        self.data_dir_edit = QLineEdit(self.current_data_dir)
+        self.data_dir_edit.setReadOnly(False)
         dir_layout.addWidget(self.data_dir_edit)
 
         self.change_dir_btn = QPushButton("浏览...")
@@ -98,32 +98,33 @@ class FileTab(QWidget):
         self.update_file_list()
 
     def change_data_dir(self):
-        """通过浏览更改数据目录"""
+        """通过浏览更改当前数据目录（不影响默认目录）"""
         new_dir = QFileDialog.getExistingDirectory(
-            self, "选择数据目录",
-            self.config.get("data_dir")  # 修正：使用配置中的目录
+            self, "选择数据目录", self.current_data_dir  # 使用当前目录作为初始路径
         )
         if new_dir:
             self.data_dir_edit.setText(new_dir)
             self.apply_data_dir()
 
+
     def apply_data_dir(self):
-        """应用数据目录更改"""
+        """应用当前数据目录更改（仅更新临时目录，不修改默认目录）"""
         new_dir = self.data_dir_edit.text().strip()
         if new_dir and os.path.isdir(new_dir):
-            # 修正：同时更新配置和处理器
-            self.config.set("data_dir", new_dir)
-            self.processor.set_data_dir(new_dir)
+            # 仅更新当前目录，不修改配置中的默认目录
+            self.current_data_dir = new_dir
+            # 更新处理器的当前工作目录
+            self.processor.set_current_data_dir(new_dir)
             self.update_file_list()
             self.clear_selection()
             if self.parent:
-                self.parent.statusBar().showMessage(f"数据目录已更新为: {new_dir}")
+                self.parent.statusBar().showMessage(f"当前数据目录已更新为: {new_dir}")
         else:
             show_error_message(self, "警告", "无效的目录路径")
-            self.data_dir_edit.setText(self.config.get("data_dir"))  # 修正：使用配置中的目录
+            self.data_dir_edit.setText(self.current_data_dir)  # 恢复当前目录
 
     def add_external_files(self):
-        """添加外部文件到数据目录"""
+        """添加外部文件到当前数据目录（而非默认目录）"""
         supported_exts = [
             "CSV文件 (*.csv)",
             "Excel文件 (*.xlsx *.xls)",
@@ -139,8 +140,8 @@ class FileTab(QWidget):
         )
 
         if file_paths:
-            # 修正：使用配置中的数据目录
-            data_dir = self.config.get("data_dir")
+            # 使用当前数据目录作为目标路径
+            data_dir = self.current_data_dir
             added_files = []
 
             for file_path in file_paths:
@@ -174,15 +175,14 @@ class FileTab(QWidget):
                 self.update_file_list()
 
     def update_file_list(self):
-        """更新可用文件列表"""
+        """更新当前数据目录中的文件列表"""
         self.file_list.clear()
         try:
-            # 修正：使用配置中的数据目录
-            files = get_file_list(self.config.get("data_dir"))
+            # 读取当前数据目录中的文件
+            files = get_file_list(self.current_data_dir)
             icon_provider = QFileIconProvider()
 
             for file in files:
-                # 创建带有图标的列表项
                 item = QListWidgetItem(icon_provider.icon(QFileIconProvider.File), file)
                 self.file_list.addItem(item)
 

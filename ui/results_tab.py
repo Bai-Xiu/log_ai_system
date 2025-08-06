@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-                             QPushButton, QTextEdit, QTableWidget, QTableWidgetItem,  # 确保包含 QTextEdit
-                             QSplitter, QGroupBox, QFileDialog)
+                            QPushButton, QGroupBox, QTextEdit, QTableWidget, QTableWidgetItem,
+                            QSplitter, QFileDialog)
 from PyQt5.QtCore import Qt
 import os
 import pandas as pd
@@ -10,10 +10,10 @@ from utils.helpers import show_info_message, show_error_message, get_unique_file
 class ResultsTab(QWidget):
     def __init__(self, config, parent=None):
         super().__init__(parent)
-        self.config = config
+        self.config = config  # 配置对象（存储默认目录）
         self.parent = parent
         self.current_result = None
-        self.save_dir = config.get("save_dir")
+        self.current_save_dir = config.get("save_dir")
         self.init_ui()
 
     def init_ui(self):
@@ -23,7 +23,8 @@ class ResultsTab(QWidget):
         save_path_layout = QHBoxLayout()
         save_path_layout.addWidget(QLabel("保存路径:"))
 
-        self.save_dir_edit = QLineEdit(self.save_dir)
+        # 显示当前保存目录（而非直接读取配置）
+        self.save_dir_edit = QLineEdit(self.current_save_dir)
         self.save_dir_edit.setReadOnly(False)
         save_path_layout.addWidget(self.save_dir_edit)
 
@@ -101,19 +102,23 @@ class ResultsTab(QWidget):
             self.result_table.resizeColumnsToContents()
 
     def change_save_dir(self):
-        new_dir = QFileDialog.getExistingDirectory(self, "选择保存目录", self.save_dir)
+        """通过浏览更改当前保存目录（不影响默认目录）"""
+        new_dir = QFileDialog.getExistingDirectory(
+            self, "选择保存目录", self.current_save_dir  # 使用当前目录作为初始路径
+        )
         if new_dir:
             self.save_dir_edit.setText(new_dir)
             self.apply_save_dir()
 
     def apply_save_dir(self):
+        """应用当前保存目录更改（仅更新临时目录，不修改默认目录）"""
         new_dir = self.save_dir_edit.text().strip()
         if new_dir and os.path.isdir(new_dir):
-            self.save_dir = new_dir
-            self.config.set("save_dir", new_dir)
+            # 仅更新当前目录，不修改配置中的默认目录
+            self.current_save_dir = new_dir
         else:
             show_error_message(self, "错误", "无效的目录路径")
-            self.save_dir_edit.setText(self.save_dir)
+            self.save_dir_edit.setText(self.current_save_dir)  # 恢复当前目录
 
     def save_results(self):
         if not self.current_result or "result_table" not in self.current_result:
@@ -123,8 +128,9 @@ class ResultsTab(QWidget):
         try:
             df = self.current_result["result_table"]
             base_name = "analysis_result"
-            filename = get_unique_filename(self.save_dir, base_name, "csv")
-            file_path = os.path.join(self.save_dir, filename)
+            # 使用当前保存目录作为保存路径
+            filename = get_unique_filename(self.current_save_dir, base_name, "csv")
+            file_path = os.path.join(self.current_save_dir, filename)
 
             df.to_csv(file_path, index=False, encoding="utf-8-sig")
             show_info_message(self, "成功", f"结果已保存至:\n{file_path}")

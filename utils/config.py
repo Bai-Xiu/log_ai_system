@@ -5,13 +5,18 @@ import json
 class Config:
     def __init__(self):
         self.config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../config.json')
+        # 初始化为空目录，不自动设置
         self.config = {
             "api_key": "",
-            "data_dir": os.path.abspath("../data"),
-            "save_dir": os.path.abspath("../results"),
+            "data_dir": "",
+            "save_dir": "",
             "verbose_logging": False
         }
         self.load()
+        if self.config["data_dir"]:
+            os.makedirs(self.config["data_dir"], exist_ok=True)
+        if self.config["save_dir"]:
+            os.makedirs(self.config["save_dir"], exist_ok=True)
 
     def load(self):
         if os.path.exists(self.config_file):

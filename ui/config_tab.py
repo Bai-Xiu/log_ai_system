@@ -10,7 +10,6 @@ class ConfigTab(QWidget):
         self.config = config
         self.parent = parent
         self.init_ui()
-
     def init_ui(self):
         layout = QVBoxLayout(self)
 
@@ -82,11 +81,19 @@ class ConfigTab(QWidget):
             self, "选择数据目录", self.config.get("data_dir")
         )
         if new_dir:
+            # 更新配置中的默认目录
             self.config.set("data_dir", new_dir)
             self.default_data_dir_edit.setText(new_dir)
-            # 更新处理器的数据目录
+
+            # 同步更新文件选择标签页的当前目录
+            if hasattr(self.parent, 'file_tab'):
+                self.parent.file_tab.current_data_dir = new_dir
+                self.parent.file_tab.data_dir_edit.setText(new_dir)
+                self.parent.file_tab.apply_data_dir()  # 触发刷新
+
+            # 更新处理器的默认目录
             if hasattr(self.parent, 'processor'):
-                self.parent.processor.set_data_dir(new_dir)
+                self.parent.processor.set_default_data_dir(new_dir)
             show_info_message(self, "成功", "默认数据目录已更新")
 
     def change_default_save_dir(self):
@@ -94,9 +101,16 @@ class ConfigTab(QWidget):
             self, "选择结果目录", self.config.get("save_dir")
         )
         if new_dir:
+            # 更新配置中的默认目录
             self.config.set("save_dir", new_dir)
             self.default_save_dir_edit.setText(new_dir)
-            # 更新处理器的保存目录
+
+            # 同步更新结果标签页的当前目录
+            if hasattr(self.parent, 'results_tab'):
+                self.parent.results_tab.current_save_dir = new_dir
+                self.parent.results_tab.save_dir_edit.setText(new_dir)
+
+            # 更新处理器的默认目录
             if hasattr(self.parent, 'processor'):
-                self.parent.processor.set_save_dir(new_dir)
+                self.parent.processor.set_default_save_dir(new_dir)
             show_info_message(self, "成功", "默认结果目录已更新")

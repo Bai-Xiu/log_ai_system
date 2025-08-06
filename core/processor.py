@@ -8,12 +8,19 @@ from core.file_processors import (
     JsonFileProcessor, TxtFileProcessor
 )
 
+
 class LogAIProcessor:
     def __init__(self, config):
         self.config = config
         self.api_key = config.get("api_key", "")
-        self.data_dir = config.get("data_dir", "")
-        self.save_dir = config.get("save_dir", "")
+
+        # 区分默认目录和当前目录
+        self.default_data_dir = config.get("data_dir", "")  # 持久化的默认目录
+        self.current_data_dir = self.default_data_dir  # 当前工作目录（临时）
+
+        self.default_save_dir = config.get("save_dir", "")  # 持久化的默认目录
+        self.current_save_dir = self.default_save_dir  # 当前工作目录（临时）
+
         self.verbose = config.get("verbose_logging", False)
         self.supported_encodings = ['utf-8', 'gbk', 'gb2312', 'ansi', 'utf-16', 'utf-16-le']
 
@@ -38,41 +45,50 @@ class LogAIProcessor:
             for ext in processor.get_supported_extensions():
                 self.extension_map[ext.lower()] = processor
 
-    def set_data_dir(self, new_dir):
-        """设置数据目录（完全由用户指定）"""
+    # 新增：设置默认数据目录（从配置标签页调用）
+    def set_default_data_dir(self, new_dir):
         if new_dir:
-            self.data_dir = new_dir
+            self.default_data_dir = new_dir
             self.config.set("data_dir", new_dir)
-            self.current_data = None  # 清除缓存数据
 
-    def set_save_dir(self, new_dir):
-        """设置保存目录（完全由用户指定）"""
+    # 新增：设置当前数据目录（从文件选择标签页调用）
+    def set_current_data_dir(self, new_dir):
         if new_dir:
-            self.save_dir = new_dir
+            self.current_data_dir = new_dir
+
+    # 新增：设置默认保存目录（从配置标签页调用）
+    def set_default_save_dir(self, new_dir):
+        if new_dir:
+            self.default_save_dir = new_dir
             self.config.set("save_dir", new_dir)
 
+    # 新增：设置当前保存目录（从结果标签页调用）
+    def set_current_save_dir(self, new_dir):
+        if new_dir:
+            self.current_save_dir = new_dir
+
     def get_file_list(self):
-        """获取用户指定目录中的文件列表"""
-        if not self.data_dir or not os.path.exists(self.data_dir):
+        """获取当前数据目录中的文件列表"""
+        if not self.current_data_dir or not os.path.exists(self.current_data_dir):
             return []
-        return get_file_list(self.data_dir)
+        return get_file_list(self.current_data_dir)
 
     def load_data_files(self, file_names):
-        """加载用户指定目录中的文件"""
-        if not self.data_dir or not os.path.exists(self.data_dir):
-            raise ValueError("数据目录未设置或不存在")
+        """从当前数据目录加载文件"""
+        if not self.current_data_dir or not os.path.exists(self.current_data_dir):
+            raise ValueError("当前数据目录未设置或不存在")
 
         return self._load_file_data(file_names)
 
     def _load_file_data(self, file_names):
-        """加载文件数据（支持多种类型）"""
+        """从当前数据目录读取文件数据"""
         if self.current_data and set(file_names) == set(self.current_data.keys()):
             return self.current_data
 
         data_dict = {}
         for file_name in file_names:
             safe_file = sanitize_filename(file_name)
-            full_path = os.path.join(self.data_dir, safe_file)
+            full_path = os.path.join(self.current_data_dir, safe_file)
 
             if not os.path.exists(full_path):
                 raise FileNotFoundError(f"文件不存在: {full_path}")
