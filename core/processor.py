@@ -134,7 +134,8 @@ class LogAIProcessor:
        - summary：字符串类型的总结，需包含关键分析结论（如统计数量、趋势、异常点等），禁止使用默认值，必须根据分析结果生成具体内容
     4. 不要包含任何函数定义，直接编写可执行代码
     5. 不需要return语句，只需确保定义了上述两个变量
-    6. 处理日志时，务必将包含类似"低/中/高"等含中文的字符串的列显式转换为字符串类型（如df['level'] = df['level'].astype(str)）"""
+    6. 处理日志时，务必将包含类似"低/中/高"等含中文的字符串的列显式转换为字符串类型（如df['level'] = df['level'].astype(str)）
+"""
 
         response = self.client.completions_create(
             model='deepseek-reasoner',
