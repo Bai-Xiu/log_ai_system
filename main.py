@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import QApplication
 from ui.main_window import LogAnalyzerGUI
 from utils.config import Config
 
-
 def main():
     # 初始化配置
     config = Config()

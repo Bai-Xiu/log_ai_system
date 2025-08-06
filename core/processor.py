@@ -15,7 +15,7 @@ class LogAIProcessor:
         self.data_dir = config.get("data_dir", "")
         self.save_dir = config.get("save_dir", "")
         self.verbose = config.get("verbose_logging", False)
-        self.supported_encodings = ['utf-8', 'gbk', 'gb2312', 'ansi']
+        self.supported_encodings = ['utf-8', 'gbk', 'gb2312', 'ansi', 'utf-16', 'utf-16-le']
 
         # 初始化API客户端
         self.client = DeepSeekAPI(api_key=self.api_key) if self.api_key else None
@@ -121,31 +121,29 @@ class LogAIProcessor:
                 "sample": df.head(2).to_dict(orient='records')
             }
 
-        prompt = f"""根据用户请求编写完整的Python处理代码，只返回代码内容:
+        prompt = f"""根据用户请求编写完整的Python处理代码:
     用户需求: {user_request}
     数据信息: {json.dumps(file_info, ensure_ascii=False)}
 
     说明：
+    重要提示：返回的内容只能是可直接执行的代码，绝对不要有任何其他说明，保证返回的内容可以直接执行
     1. 已存在变量data_dict（文件名到DataFrame的字典），可直接使用
     2. 必须导入所需的库（如pandas）
     3. 必须定义两个变量：
        - result_table：处理后的DataFrame结果（必须存在）
        - summary：字符串类型的总结，需包含关键分析结论（如统计数量、趋势、异常点等），禁止使用默认值，必须根据分析结果生成具体内容
     4. 不要包含任何函数定义，直接编写可执行代码
-    5. 不需要return语句，只需确保定义了上述两个变量"""
+    5. 不需要return语句，只需确保定义了上述两个变量
+    6. 处理日志时，务必将包含类似"低/中/高"等含中文的字符串的列显式转换为字符串类型（如df['level'] = df['level'].astype(str)）"""
 
         response = self.client.completions_create(
             model='deepseek-reasoner',
             prompt=prompt,
             max_tokens=5000,
-            temperature=0.4
+            temperature=0.3
         )
 
         code_block = response.choices[0].message.content.strip()
-
-        # 清理代码块中的反引号
-        if code_block.startswith('```'):
-            code_block = '\n'.join(code_block.split('\n')[1:-1])
 
         return code_block
 
