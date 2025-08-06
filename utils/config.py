@@ -1,3 +1,4 @@
+# 修改 log_ai_system/utils/config.py 文件
 import os
 import json
 
@@ -11,9 +12,6 @@ class Config:
             "verbose_logging": False
         }
         self.load()
-        # 确保目录存在
-        os.makedirs(self.config["data_dir"], exist_ok=True)
-        os.makedirs(self.config["save_dir"], exist_ok=True)
 
     def load(self):
         if os.path.exists(self.config_file):
