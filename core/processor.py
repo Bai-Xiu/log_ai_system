@@ -45,24 +45,20 @@ class LogAIProcessor:
             for ext in processor.get_supported_extensions():
                 self.extension_map[ext.lower()] = processor
 
-    # 新增：设置默认数据目录（从配置标签页调用）
     def set_default_data_dir(self, new_dir):
         if new_dir:
             self.default_data_dir = new_dir
             self.config.set("data_dir", new_dir)
 
-    # 新增：设置当前数据目录（从文件选择标签页调用）
     def set_current_data_dir(self, new_dir):
         if new_dir:
             self.current_data_dir = new_dir
 
-    # 新增：设置默认保存目录（从配置标签页调用）
     def set_default_save_dir(self, new_dir):
         if new_dir:
             self.default_save_dir = new_dir
             self.config.set("save_dir", new_dir)
 
-    # 新增：设置当前保存目录（从结果标签页调用）
     def set_current_save_dir(self, new_dir):
         if new_dir:
             self.current_save_dir = new_dir
