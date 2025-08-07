@@ -13,6 +13,10 @@
 - **扩展文件格式支持**：现已支持CSV、Excel(.xlsx, .xls)、JSON、TXT和LOG文件
 - **增强的健壮性**：多编码支持和改进的错误处理
 - **可扩展架构**：通过模块化处理器轻松添加新文件类型
+- **增强直接回答功能**：根据导入的文件内容，AI可直接生成分析结果和总结
+- **优化目录管理逻辑**：当前文件目录仅作为临时目录，下次打开时自动恢复为默认目录
+- **发布安装包**：提供便捷的安装程序，简化部署流程
+- **错误修复**：修复了多项已知问题，提升系统稳定性
 
 ## 功能特点
 
@@ -20,7 +24,7 @@
 - 通过自然语言描述分析需求，AI自动生成处理代码并执行
 - 两种分析模式：
   - 代码处理（生成结构化结果）
-  - 直接回答（快速获取结论）
+  - 直接回答（快速获取总结性结论）
 - 可视化展示分析结果，支持结果导出为CSV
 - 可配置数据目录、结果保存目录和API密钥
 
@@ -30,8 +34,8 @@
 - 依赖库：PyQt5, pandas, numpy, openpyxl, openai
 
 ## 使用指南
-
 ### 1. 配置设置（首次使用）
+
 在"配置"标签页中：
 - 输入DeepSeek API密钥（必填，用于AI分析功能）
 - 设置默认数据目录（存放日志文件）
@@ -43,13 +47,14 @@
 - 从列表中选择需要分析的日志文件
 - 可通过"添加外部文件"按钮导入新的日志文件
 - 支持格式：CSV、Excel(.xlsx, .xls)、JSON、TXT、LOG
+- 注意：当前选择的目录仅作为临时目录，程序重启后将恢复为默认目录
 
 ### 3. 数据分析
 在"数据分析"标签页中：
 - 输入分析需求（例如："统计各类型攻击的次数"、"列出出现频率最高的10个IP地址"）
 - 选择处理模式：
   - 代码处理(生成CSV)：适合需要详细结果表格的场景
-  - 直接回答：适合快速获取总结性结论
+  - 直接回答：适合快速获取总结性结论，AI将直接基于文件内容生成分析结果
 - 点击"开始分析"按钮
 
 ### 4. 查看结果
@@ -83,10 +88,11 @@ log_ai_system/
 
 ## 注意事项
 
-- 支持的编码格式：utf-8, gbk, gb2312, ansi
+- 支持的编码格式：utf-8, gbk, gb2312, ansi, utf-16, utf-16-le
 - 大型日志文件可能需要较长处理时间，请耐心等待
 - 分析结果仅作为参考，重要安全决策请结合人工审核
 - 如需添加新文件格式支持，可在`core/file_processors.py`中创建新的处理器类并在处理器列表中注册
+- 当前工作目录仅临时有效，程序重启后将自动恢复为配置中的默认目录
 
 ## 常见问题
 
@@ -99,6 +105,9 @@ A: 检查API密钥是否有效，网络连接是否正常，或尝试简化分�
 **Q: 结果表格显示异常？**  
 A: 可能是日志文件格式不规范导致，请检查文件结构和格式
 
+**Q: 重启程序后，之前选择的目录未保留？**  
+A: 当前目录仅作为临时目录，如需固定目录，请在配置中设置默认目录
+
 ---
 
 ## English-version
@@ -110,6 +119,10 @@ A PyQt5 and AI-based log analysis tool that helps security analysts quickly proc
 - **Expanded File Format Support**: Now supports CSV, Excel (.xlsx, .xls), JSON, TXT, and LOG files
 - **Enhanced Robustness**: Multi-encoding support and improved error handling
 - **Extensible Architecture**: New file types can be easily added through modular processors
+- **Enhanced Direct Answer Function**: AI can directly generate analysis results and summaries based on imported file content
+- **Optimized Directory Management**: Current file directory is only temporary and will be overwritten by default directory on next launch
+- **Released Installation Package**: Provides a convenient installer to simplify deployment
+- **Bug Fixes**: Resolved multiple known issues to improve system stability
 
 ## Features
 
@@ -127,8 +140,8 @@ A PyQt5 and AI-based log analysis tool that helps security analysts quickly proc
 - Dependent libraries: PyQt5, pandas, numpy, openpyxl, openai
 
 ## User Guide
-
 ### 1. Configuration Settings (First-time Use)
+
 In the "Configuration" tab:
 - Enter DeepSeek API key (required for AI analysis functionality)
 - Set default data directory (for storing log files)
@@ -140,13 +153,14 @@ In the "File Selection" tab:
 - Choose the log files to analyze from the list
 - Import new log files using the "Add External Files" button
 - Supported formats: CSV, Excel (.xlsx, .xls), JSON, TXT, LOG
+- Note: The currently selected directory is temporary and will revert to the default directory when the program restarts
 
 ### 3. Data Analysis
 In the "Data Analysis" tab:
 - Enter analysis requirements (e.g., "Count the number of each type of attack", "List the top 10 most frequent IP addresses")
 - Select processing mode:
   - Code Processing (generates CSV): Suitable for scenarios requiring detailed result tables
-  - Direct Answer: Suitable for quickly obtaining summary conclusions
+  - Direct Answer: Suitable for quickly obtaining summary conclusions, AI will generate analysis results directly based on file content
 - Click the "Start Analysis" button
 
 ### 4. View Results
@@ -180,10 +194,11 @@ log_ai_system/
 
 ## Notes
 
-- Supported encodings: utf-8, gbk, gb2312, ansi
+- Supported encodings: utf-8, gbk, gb2312, ansi, utf-16, utf-16-le
 - Large log files may require longer processing time, please be patient
 - Analysis results are for reference only; important security decisions should be combined with manual review
 - To add support for new file formats, create a new processor class in `core/file_processors.py` and register it in the processor list
+- The current working directory is only temporarily valid and will automatically revert to the default directory in the configuration when the program restarts
 
 ## Frequently Asked Questions
 
@@ -195,3 +210,6 @@ A: Check if the API key is valid, network connection is working, or try simplify
 
 **Q: Result table display is abnormal?**  
 A: May be caused by non-standard log file format, please check the file structure and formatting
+
+**Q: The previously selected directory is not retained after restarting the program?**  
+A: The current directory is only temporary. To set a fixed directory, please configure it as the default directory in settings
