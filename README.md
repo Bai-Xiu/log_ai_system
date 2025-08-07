@@ -6,7 +6,7 @@
 
 ## 中文版本
 
-一款基于PyQt5和AI的日志分析工具，可帮助安全分析师快速处理和分析多种格式的日志文件，通过自然语言交互生成分析结果和总结。
+一款通过api接入deepseek的日志分析工具，可帮助安全分析师快速处理和分析多种格式的日志文件，通过自然语言交互生成分析结果和总结。
 
 ## 主要更新
 
@@ -112,7 +112,7 @@ A: 当前目录仅作为临时目录，如需固定目录，请在配置中设�
 
 ## English-version
 
-A PyQt5 and AI-based log analysis tool that helps security analysts quickly process and analyze multiple formats of log files, generating analysis results and summaries through natural language interaction.
+A log analysis tool that connects to DeepSeek via API, helping security analysts quickly process and analyze log files in multiple formats, generating analysis results and summaries through natural language interaction.
 
 ## Key Updates
 
