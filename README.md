@@ -32,7 +32,7 @@
 
 - Python 3.8+
 - 依赖库：PyQt5, pandas, numpy, openpyxl, openai
-- 运行环境：可在常规Python环境或Anaconda虚拟环境（包括PyTorch环境）中运行  
+- 运行环境：可在常规Python环境或Anaconda虚拟环境（包括PyTorch环境）中运行 
   *注：项目本身不依赖PyTorch，但可兼容包含PyTorch的Anaconda虚拟环境，建议使用虚拟环境隔离依赖*
   
 ## 使用指南
@@ -140,7 +140,7 @@ A log analysis tool that connects to DeepSeek via API, helping security analysts
 
 - Python 3.8+
 - Dependent libraries: PyQt5, pandas, numpy, openpyxl, openai
-- Runtime environment: Can run in a regular Python environment or Anaconda virtual environment (including PyTorch environment)
+- Runtime environment: Can run in a regular Python environment or Anaconda virtual environment (including PyTorch environment) 
   *Note: The project itself does not depend on PyTorch, but is compatible with Anaconda virtual environments that include PyTorch. It is recommended to use a virtual environment to isolate dependencies*
 
 ## User Guide
