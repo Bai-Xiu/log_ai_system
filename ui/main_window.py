@@ -8,7 +8,7 @@ from ui.file_tab import FileTab
 from ui.analysis_tab import AnalysisTab
 from ui.results_tab import ResultsTab
 from core.processor import LogAIProcessor
-
+from ui.sensitive_tab import SensitiveWordTab
 class LogAnalyzerGUI(QMainWindow):
     def __init__(self, config):
         super().__init__()
@@ -16,6 +16,7 @@ class LogAnalyzerGUI(QMainWindow):
         self.processor = LogAIProcessor(config)
         self.init_ui()
         self.set_window_icon()
+
 
     def init_ui(self):
         # 窗口基本设置
@@ -57,6 +58,10 @@ class LogAnalyzerGUI(QMainWindow):
         # 结果标签页
         self.results_tab = ResultsTab(self.config, self)
         self.tabs.addTab(self.results_tab, "分析结果")
+
+        # 添加敏感词管理标签页
+        self.sensitive_tab = SensitiveWordTab(self.processor.sensitive_processor, self)
+        self.tabs.addTab(self.sensitive_tab, "敏感词管理")
 
     def set_window_icon(self):
         # 解析图标绝对路径（项目根目录 -> resources -> app_icon.ico）
