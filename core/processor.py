@@ -194,17 +194,6 @@ class LogAIProcessor:
 
     def generate_processing_code(self, user_request, file_names):
         """生成完整可执行代码，而非函数内部逻辑"""
-        if not self.client:
-            # 默认代码：直接返回所有数据
-            return """import pandas as pd
-    result_table = pd.concat(data_dict.values(), ignore_index=True)
-    # 转换所有时间类型列
-    for col in result_table.columns:
-        if pd.api.types.is_datetime64_any_dtype(result_table[col]):
-            result_table[col] = result_table[col].astype(str)
-    summary = f'共{len(result_table)}条记录'
-    chart_info = None"""
-
         data_dict = self._load_file_data(file_names)
         file_info = {}
 
@@ -241,30 +230,26 @@ class LogAIProcessor:
 用户需求: {user_request}
 数据信息: {json.dumps(file_info, ensure_ascii=False)}
 
-### 核心数据说明
-- 所有数据已加载到变量 `data_dict` 中（类型：字典）
-- `data_dict` 的键为文件名（如上述数据信息中的文件名），值为对应文件的pandas.DataFrame
-- 必须从 `data_dict` 中加载数据到 `df`，**禁止使用空DataFrame初始化后不赋值**
+请根据用户需求生成可直接执行的Python代码，需严格遵循以下规则：
 
-### 代码规范（必须严格遵守）
-1. 开头必须包含：
-import pandas as pd
-import numpy as np
-# 从data_dict加载数据到df（示例：合并所有文件或使用特定文件）
-df = pd.concat(data_dict.values(), ignore_index=True)  # 合并所有文件数据
-# 或：df = data_dict['具体文件名']  # 使用单个文件数据（需替换为实际文件名）
+一、执行环境说明
+1. 代码将在包含以下预定义变量的环境中执行：
+   - data_dict: 字典类型，键为文件名，值为pandas.DataFrame（已加载的所有数据）
+   - pd: pandas库（已导入，可直接使用）
+   - np: numpy库（已导入，可直接使用）
+2. 禁止使用任何未提及的库或变量，禁止导入新库（如import语句）
 
-基于 df 进行数据处理（清洗、分析、转换等），禁止重新定义 df 或删除上述初始化代码
-
-2. 必须定义三个变量：
-   - result_table：处理后的DataFrame结果（必须存在）
-   - summary：字符串类型的总结，根据用户要求生成具体内容，可包含：
-     * 关键分析结论（如统计数量、趋势、异常点等）
-     * 数据中发现的规律总结
-     * 针对问题的解决方案或建议
-     * 其他用户要求但无法被作为代码执行的信息
-     禁止使用默认值，必须根据分析结果生成具体内容
-   - chart_info：图表信息字典（** 必须包含chart_type字段 **），格式为:
+二、必须定义的核心变量（缺失会导致执行失败）
+1. result_table: 必须是pandas.DataFrame类型
+   - 存储最终分析结果数据
+   - 若无需处理，需通过pd.concat(data_dict.values(), ignore_index=True)生成
+   - 确保所有列名有效，无重复或特殊字符
+2. summary: 必须是字符串类型
+   - 包含分析结论、统计信息等总结内容
+   - 长度建议50-300字，清晰描述分析结果
+3. chart_info: 可选字典类型（允许为None）
+   - 如果用户需要生成图表，则需提供chart_info字典
+   - 字典结构如下：
      {{
        "chart_type": "bar/line/pie/scatter/hist",  # 强制必填，且为支持的类型
        "title": "图表标题",  # 强制必填
@@ -275,19 +260,33 @@ df = pd.concat(data_dict.values(), ignore_index=True)  # 合并所有文件数�
          "bins": 分箱数  # hist可选
        }}
      }}
-     这是图表信息的模板，chart_type字段按照这些关键词对应：bar柱状图/line折线图/scatter散点图/hist直方图/pie饼图
+     这是图表信息的模板，chart_type字段按照这些关键词对应：柱状图bar/折线图line/散点图scatter/直方图hist/饼图pie
      生成代码时根据图表类型检查必要的列配置
-            'bar': ['x_col', 'y_col']
-            'line': ['x_col', 'y_col']
-            'scatter': ['x_col', 'y_col']
-            'pie': ['x_col', 'values']
-            'hist': ['x_col']
-     当用户说生成“图表”这类泛指时，由你决定图表类型（即chart_type字段）
-     当用户需求中指明需要图表时才生成图表，若不需要图表，chart_info显式设置为None；若需要图表，所有标注"必须"的字段均为必填项
-3. 代码必须可直接执行，不依赖外部文件，变量名不得与data_dict、df、result_table、summary、chart_info冲突
-   错误后果：
-   若未从data_dict加载数据导致df未定义，或未生成要求的变量，代码将执行失败。请严格检查代码正确性。
-4. 保留数据中`PROTECTEDXXXXXXXX`格式的去敏字段，不做修改。
+        'bar': ['x_col', 'y_col']
+        'line': ['x_col', 'y_col']
+        'scatter': ['x_col', 'y_col']
+        'pie': ['x_col', 'values']
+        'hist': ['x_col']
+
+三、代码结构规范
+1. 先定义工具函数（如数据解析、格式转换等辅助函数）
+2. 再进行数据处理逻辑（基于data_dict中的数据）
+3. 最后生成上述三个核心变量
+4. 代码长度控制在50-300行，避免过于冗长
+
+四、禁止事项
+1. 禁止使用print、input等IO操作语句
+2. 禁止修改data_dict原始数据（可创建副本处理）
+3. 禁止修改形如PROTECTEDXXXXXXXX敏感词占位符（保持原样）
+4. 禁止出现语法错误（如缩进错误、缺少冒号、未闭合括号等）
+5. 禁止返回不完整代码（如仅定义函数未执行逻辑）
+
+五、数据处理要求
+1. 处理DataFrame时需考虑空值（使用pd.notna()判断）
+2. 时间类型列建议转换为字符串（如df[col].astype(str)）
+3. 确保数值计算逻辑正确（避免除零、类型不匹配等错误）
+
+请严格按照上述规则生成代码，确保可直接执行且符合变量要求。
 """
 
         response = self.client.completions_create(

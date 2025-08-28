@@ -85,7 +85,7 @@ class FileTab(QWidget):
         splitter.setSizes([300, 200])
 
         # 底部按钮
-        self.next_btn = QPushButton("下一步分析")
+        self.next_btn = QPushButton("下一步")
         self.next_btn.clicked.connect(self.go_to_analysis)
         self.next_btn.setEnabled(False)
 
