@@ -245,10 +245,10 @@ class LogAIProcessor:
    - 若无需处理，需通过pd.concat(data_dict.values(), ignore_index=True)生成
    - 确保所有列名有效，无重复或特殊字符
 2. summary: 必须是字符串类型
-   - 包含分析结论、统计信息等总结内容
+   - 根据用户需求，可以包含分析结论、统计信息、管理建议（可自行丰富内容）等总结内容
    - 长度建议50-300字，清晰描述分析结果
-3. chart_info: 可选字典类型（允许为None）
-   - 如果用户需要生成图表，则需提供chart_info字典
+3. chart_info: 可选字典类型（如果用户不需要生成图表，可允许为None）
+   - 如果用户在需求中需要生成图表（如生成图表、生成柱状图等），则需提供chart_info字典
    - 字典结构如下：
      {{
        "chart_type": "bar/line/pie/scatter/hist",  # 强制必填，且为支持的类型
@@ -272,7 +272,6 @@ class LogAIProcessor:
 1. 先定义工具函数（如数据解析、格式转换等辅助函数）
 2. 再进行数据处理逻辑（基于data_dict中的数据）
 3. 最后生成上述三个核心变量
-4. 代码长度控制在50-300行，避免过于冗长
 
 四、禁止事项
 1. 禁止使用print、input等IO操作语句
@@ -355,4 +354,5 @@ class LogAIProcessor:
             "summary": restored_summary,  # 返回还原后的总结
             "result_table": None,  # 直接回答模式不返回表格
             "chart_info": None
+
         }
