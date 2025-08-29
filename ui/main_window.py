@@ -20,7 +20,7 @@ class LogAnalyzerGUI(QMainWindow):
 
     def init_ui(self):
         # 窗口基本设置
-        self.setWindowTitle("信息安全日志AI分析系统")
+        self.setWindowTitle("AI互联网威胁分析及安全决策系统")
         self.setGeometry(100, 100, 1200, 800)
         self.setFont(QFont("SimHei", 9))
         self.set_window_icon()
@@ -75,4 +75,5 @@ class LogAnalyzerGUI(QMainWindow):
 
     def set_analysis_result(self, result):
         """将分析结果传递给结果标签页"""
+
         self.results_tab.set_result(result)
